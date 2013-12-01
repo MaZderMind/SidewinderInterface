@@ -68,7 +68,7 @@ typedef union
 	};
 
 	// the int used to access the data at bitlevel
-	uint64_t bits;
+	uint8_t bytes[6];
 } sw_data_t;
 
 // empty instance of the struct to reset our data-variable
@@ -207,59 +207,23 @@ ISR(INT5_vect)
 		SETBIT(dta.bits, bitcnt);
 	*/
 
+
 	if(BITSET(DTA_PIN, DTA_P))
 	{
-		switch(bitcnt)
+		uint8_t *byte = &dta.bytes[bitcnt / 8];
+
+		switch(bitcnt % 8)
 		{
-			case  0: SETBITLONG(dta.bits,  0); break;
-			case  1: SETBITLONG(dta.bits,  1); break;
-			case  2: SETBITLONG(dta.bits,  2); break;
-			case  3: SETBITLONG(dta.bits,  3); break;
-			case  4: SETBITLONG(dta.bits,  4); break;
-			case  5: SETBITLONG(dta.bits,  5); break;
-			case  6: SETBITLONG(dta.bits,  6); break;
-			case  7: SETBITLONG(dta.bits,  7); break;
-			case  8: SETBITLONG(dta.bits,  8); break;
-			case  9: SETBITLONG(dta.bits,  9); break;
-			case 10: SETBITLONG(dta.bits, 10); break;
-			case 11: SETBITLONG(dta.bits, 11); break;
-			case 12: SETBITLONG(dta.bits, 12); break;
-			case 13: SETBITLONG(dta.bits, 13); break;
-			case 14: SETBITLONG(dta.bits, 14); break;
-			case 15: SETBITLONG(dta.bits, 15); break;
-			case 16: SETBITLONG(dta.bits, 16); break;
-			case 17: SETBITLONG(dta.bits, 17); break;
-			case 18: SETBITLONG(dta.bits, 18); break;
-			case 19: SETBITLONG(dta.bits, 19); break;
-			case 20: SETBITLONG(dta.bits, 20); break;
-			case 21: SETBITLONG(dta.bits, 21); break;
-			case 22: SETBITLONG(dta.bits, 22); break;
-			case 23: SETBITLONG(dta.bits, 23); break;
-			case 24: SETBITLONG(dta.bits, 24); break;
-			case 25: SETBITLONG(dta.bits, 25); break;
-			case 26: SETBITLONG(dta.bits, 26); break;
-			case 27: SETBITLONG(dta.bits, 27); break;
-			case 28: SETBITLONG(dta.bits, 28); break;
-			case 29: SETBITLONG(dta.bits, 29); break;
-			case 30: SETBITLONG(dta.bits, 30); break;
-			case 31: SETBITLONG(dta.bits, 31); break;
-			case 32: SETBITLONG(dta.bits, 32); break;
-			case 33: SETBITLONG(dta.bits, 33); break;
-			case 34: SETBITLONG(dta.bits, 34); break;
-			case 35: SETBITLONG(dta.bits, 35); break;
-			case 36: SETBITLONG(dta.bits, 36); break;
-			case 37: SETBITLONG(dta.bits, 37); break;
-			case 38: SETBITLONG(dta.bits, 38); break;
-			case 39: SETBITLONG(dta.bits, 39); break;
-			case 40: SETBITLONG(dta.bits, 40); break;
-			case 41: SETBITLONG(dta.bits, 41); break;
-			case 42: SETBITLONG(dta.bits, 42); break;
-			case 43: SETBITLONG(dta.bits, 43); break;
-			case 44: SETBITLONG(dta.bits, 44); break;
-			case 45: SETBITLONG(dta.bits, 45); break;
-			case 46: SETBITLONG(dta.bits, 46); break;
-			case 47: SETBITLONG(dta.bits, 47); break;
+			case 0: SETBIT(*byte, 0); break;
+			case 1: SETBIT(*byte, 1); break;
+			case 2: SETBIT(*byte, 2); break;
+			case 3: SETBIT(*byte, 3); break;
+			case 4: SETBIT(*byte, 4); break;
+			case 5: SETBIT(*byte, 5); break;
+			case 6: SETBIT(*byte, 6); break;
+			case 7: SETBIT(*byte, 7); break;
 		}
+
 	}
 
 	if(++bitcnt == 48)
