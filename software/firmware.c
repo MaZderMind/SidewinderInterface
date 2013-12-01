@@ -190,9 +190,9 @@ void data_ready(void)
 
 ISR(INT5_vect)
 {
-/*
+
 	if(bitcnt > 48) return;
-*/
+
 
 	SETBIT(CLKINDI_PORT, CLKINDI_P);
 	CLEARBIT(CLKINDI_PORT, CLKINDI_P);
