@@ -1,0 +1,13 @@
+*.tmp
+Debug
+Release
+*.o
+*.elf
+*.eep
+*~
+*.hex
+*.lss
+*.s#?
+*.b#?
+*.l#?
+eagle.epf
