@@ -32,7 +32,8 @@ void sw_data_is_now_valid(void)
 }
 
 
-
+#define MBAR_W 3
+#define XY_SZ 5
 
 
 int __attribute__((OS_main))
@@ -44,7 +45,7 @@ main(void)
 	// initialize display
 	ks0108Init(0);
 	ks0108DrawRect(0, 0, 63, 63, BLACK);
-	ks0108DrawRect(65, 0, 5, 63, BLACK);
+	//ks0108DrawRect(65, 0, MBAR_W+2, 63, BLACK);
 
 
 	// led connected to that indicator as output
@@ -64,32 +65,70 @@ main(void)
 
 			SREG = sreg_tmp;
 
-			ks0108FillRect(
-				1,
-				1,
-				61, 61,
-				WHITE
-			);
-
 			uint8_t
 				x = (((1024 - (uint16_t)c_dta.x) * 57) / 1024) + 1,
 				y = (((1024 - (uint16_t)c_dta.y) * 57) / 1024) + 1;
 
+			if(x > 1)
+			{
+				ks0108FillRect(
+					1,  // x
+					1,  // y
+					x-2, // w
+					61, // h
+					WHITE
+				);
+			}
+
+			if(x < 58)
+			{
+				ks0108FillRect(
+					x+XY_SZ,  // x
+					1,  // y
+					61-x-XY_SZ+1, // w
+					61, // h
+					WHITE
+				);
+			}
+
+			if(y > 1)
+			{
+				ks0108FillRect(
+					x,  // x
+					1,  // y
+					XY_SZ-1, // w
+					y-2, // h
+					WHITE
+				);
+			}
+
+			if(y < 58)
+			{
+				ks0108FillRect(
+					x,  // x
+					y+XY_SZ,  // y
+					XY_SZ-1, // w
+					57-y, // h
+					WHITE
+				);
+			}
+
 			ks0108FillRect(
 				x, y,
-				4, 4,
+				XY_SZ-1, XY_SZ-1,
 				BLACK
 			);
 
+
 			uint8_t
-				m = (((128 - (uint16_t)c_dta.m) * 61) / 128);
+				m = 0;//(((128 - (uint16_t)c_dta.m) * 61) / 128);
 
 			if(m < 62)
 			{
 				ks0108FillRect(
 					66,   // x
 					m+1,  // y
-					3,    // w
+					MBAR_W,    // w
 					61-m, // h
 					WHITE
 				);
@@ -100,7 +139,7 @@ main(void)
 				ks0108FillRect(
 					66,   // x
 					1,    // y
-					3,    // w
+					MBAR_W,    // w
 					m,    // h
 					BLACK
 				);
