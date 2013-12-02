@@ -6,6 +6,7 @@
 #include "bits.h"
 #include "callbacks.h"
 
+#include "ks0108.c"
 #include "uart.c"
 #include "sidewinder.c"
 
@@ -13,7 +14,7 @@
 #define INDI_PORT PORTB
 #define INDI_P PB7
 
-uint8_t is_data_valid = 0;
+volatile uint8_t is_data_valid = 0;
 
 void sw_data_is_now_invalid(void)
 {
@@ -40,6 +41,12 @@ main(void)
 	// setup sidewinder device communication
 	sw_setup();
 
+	// initialize display
+	ks0108Init(0);
+	ks0108DrawRect(0, 0, 63, 63, BLACK);
+	ks0108DrawRect(65, 0, 5, 63, BLACK);
+
+
 	// led connected to that indicator as output
 	SETBIT(INDI_DDR, INDI_P);
 
@@ -50,7 +57,6 @@ main(void)
 	{
 		if(is_data_valid)
 		{
-
 			uint8_t sreg_tmp = SREG;
 			cli();
 
@@ -58,16 +64,47 @@ main(void)
 
 			SREG = sreg_tmp;
 
-			uart_puts("x=");
-			uart_puts_uint16(c_dta.x);
-			uart_puts(" y=");
-			uart_puts_uint16(c_dta.y);
-			uart_puts(" r=");
-			uart_puts_uint8(c_dta.r);
-			uart_puts(" m=");
-			uart_puts_uint8(c_dta.m);
-			uart_putc('\n');
+			ks0108FillRect(
+				1,
+				1,
+				61, 61,
+				WHITE
+			);
 
+			uint8_t
+				x = (((1024 - (uint16_t)c_dta.x) * 57) / 1024) + 1,
+				y = (((1024 - (uint16_t)c_dta.y) * 57) / 1024) + 1;
+
+			ks0108FillRect(
+				x, y,
+				4, 4,
+				BLACK
+			);
+
+			uint8_t
+				m = (((128 - (uint16_t)c_dta.m) * 61) / 128);
+
+			if(m < 62)
+			{
+				ks0108FillRect(
+					66,   // x
+					m+1,  // y
+					3,    // w
+					61-m, // h
+					WHITE
+				);
+			}
+
+			if(m > 0)
+			{
+				ks0108FillRect(
+					66,   // x
+					1,    // y
+					3,    // w
+					m,    // h
+					BLACK
+				);
+			}
 		}
 	}
 	return 0;
