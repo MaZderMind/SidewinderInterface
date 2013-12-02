@@ -43,8 +43,11 @@ main(void)
 
 	// initialize display
 	ks0108Init(0);
+	_delay_us(500);
 	ks0108DrawRect(0, 0, 63, 63, BLACK);
 	ks0108DrawRect(65, 0, 5, 63, BLACK);
+	ks0108DrawRect(72, 0, 32, 5, BLACK);
+
 	ks0108DrawRect(72, 0, 32, 5, BLACK);
 
 
@@ -116,7 +119,7 @@ main(void)
 
 			// rotation
 			uint8_t
-				r = (((64 - (uint16_t)c_dta.r) * 30) / 64);
+				r = ((((uint16_t)c_dta.r) * 31) / 64);
 
 			// clear rotation bar
 			ks0108FillRect(73, 1, 30, 3, WHITE);
