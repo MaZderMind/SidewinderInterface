@@ -32,7 +32,6 @@ void sw_data_is_now_valid(void)
 }
 
 
-#define MBAR_W 3
 #define XY_SZ 5
 
 
@@ -45,7 +44,8 @@ main(void)
 	// initialize display
 	ks0108Init(0);
 	ks0108DrawRect(0, 0, 63, 63, BLACK);
-	ks0108DrawRect(65, 0, MBAR_W+2, 63, BLACK);
+	ks0108DrawRect(65, 0, 5, 63, BLACK);
+	ks0108DrawRect(72, 0, 32, 5, BLACK);
 
 
 	// led connected to that indicator as output
@@ -65,54 +65,29 @@ main(void)
 
 			SREG = sreg_tmp;
 
+			// x & y display coords
 			uint8_t
-				x = (((1024 - (uint16_t)c_dta.x) * 57) / 1024) + 1,
-				y = (((1024 - (uint16_t)c_dta.y) * 57) / 1024) + 1;
+				x = (((1024 - (uint16_t)c_dta.x) * (62-XY_SZ)) / 1024) + 1,
+				y = (((1024 - (uint16_t)c_dta.y) * (62-XY_SZ)) / 1024) + 1;
 
+			// clear right half of screen
 			if(x > 1)
-			{
-				ks0108FillRect(
-					1,  // x
-					1,  // y
-					x-2, // w
-					61, // h
-					WHITE
-				);
-			}
+				ks0108FillRect(1, 1, x-2, 61, WHITE);
 
+			// clear left half of screen
 			if(x < 58)
-			{
-				ks0108FillRect(
-					x+XY_SZ,  // x
-					1,  // y
-					61-x-XY_SZ+1, // w
-					61, // h
-					WHITE
-				);
-			}
+				ks0108FillRect(x + XY_SZ, 1, 62 - x - XY_SZ, 61, WHITE);
 
+			// clear part below the dot
 			if(y > 1)
-			{
-				ks0108FillRect(
-					x,  // x
-					1,  // y
-					XY_SZ-1, // w
-					y-2, // h
-					WHITE
-				);
-			}
+				ks0108FillRect(x, 1, XY_SZ - 1, y - 2, WHITE);
 
+			// clear part above the dot
 			if(y < 58)
-			{
-				ks0108FillRect(
-					x,  // x
-					y+XY_SZ,  // y
-					XY_SZ-1, // w
-					57-y, // h
-					WHITE
-				);
-			}
+				ks0108FillRect(x, y + XY_SZ, XY_SZ - 1, 57 - y, WHITE);
 
+
+			// paint the dot
 			ks0108FillRect(
 				x, y,
 				XY_SZ-1, XY_SZ-1,
@@ -120,30 +95,37 @@ main(void)
 			);
 
 
+
+
+
+			// movable-member
 			uint8_t
 				m = (((128 - (uint16_t)c_dta.m) * 62) / 128);
 
+			// clear movable-member bar
 			if(m < 62)
-			{
-				ks0108FillRect(
-					66,   // x
-					m+1,  // y
-					MBAR_W,    // w
-					61-m, // h
-					WHITE
-				);
-			}
+				ks0108FillRect(66, m + 1, 3, 61 - m, WHITE);
 
+			// fill movable-member bar
 			if(m > 0)
-			{
-				ks0108FillRect(
-					66,   // x
-					1,    // y
-					MBAR_W,    // w
-					m-1,    // h
-					BLACK
-				);
-			}
+				ks0108FillRect(66, 1, 3, m - 1, BLACK);
+
+
+
+
+
+			// rotation
+			uint8_t
+				r = (((64 - (uint16_t)c_dta.r) * 30) / 64);
+
+			// clear rotation bar
+			ks0108FillRect(73, 1, 30, 3, WHITE);
+
+			// fill movable-member bar
+			if(r > 15)
+				ks0108FillRect(73+15, 1, r-15, 3, BLACK);
+			else
+				ks0108FillRect(73+r, 1, 15-r, 3, BLACK);
 		}
 	}
 	return 0;
