@@ -45,7 +45,7 @@ main(void)
 	// initialize display
 	ks0108Init(0);
 	ks0108DrawRect(0, 0, 63, 63, BLACK);
-	//ks0108DrawRect(65, 0, MBAR_W+2, 63, BLACK);
+	ks0108DrawRect(65, 0, MBAR_W+2, 63, BLACK);
 
 
 	// led connected to that indicator as output
@@ -121,7 +121,7 @@ main(void)
 
 
 			uint8_t
-				m = 0;//(((128 - (uint16_t)c_dta.m) * 61) / 128);
+				m = (((128 - (uint16_t)c_dta.m) * 62) / 128);
 
 			if(m < 62)
 			{
@@ -140,7 +140,7 @@ main(void)
 					66,   // x
 					1,    // y
 					MBAR_W,    // w
-					m,    // h
+					m-1,    // h
 					BLACK
 				);
 			}
