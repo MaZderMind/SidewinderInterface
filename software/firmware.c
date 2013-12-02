@@ -120,13 +120,17 @@ main(void)
 			// rotation
 			uint8_t
 				r = ((((uint16_t)c_dta.r) * 31) / 64);
-
+_delay_ms(1000);
 			// clear rotation bar
 			ks0108FillRect(73, 1, 30, 3, WHITE);
-
+_delay_ms(1000);
 			// fill movable-member bar
 			if(r > 15)
+			{
+				ks0108FillRect(73, 1, 73+r, 3, BLACK);
+				_delay_ms(1000);
 				ks0108FillRect(73+15, 1, r-15, 3, BLACK);
+			}
 			else
 				ks0108FillRect(73+r, 1, 15-r, 3, BLACK);
 		}
