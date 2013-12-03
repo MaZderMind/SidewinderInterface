@@ -32,7 +32,7 @@ typedef union
 	{
 		unsigned int btn_fire:1;      // edge  1
 
-		unsigned int btn_top_large:1; // edge  2
+		unsigned int btn_top:1; // edge  2
 		unsigned int btn_top_up:1;    // edge  3
 		unsigned int btn_top_down:1;  // edge  4
 
