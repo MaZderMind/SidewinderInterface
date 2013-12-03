@@ -193,7 +193,7 @@ main(void)
 			ks0108FillRect(119,  9,  7,  7, c_dta.btn_d ? WHITE : BLACK);
 
 			// arrows
-			ks0108DrawPixmap8P( 92, 40, 3, (c_dta.head >= 2 && c_dta.head <= 4) ? rArrowOn : rArrow);
+			ks0108DrawPixmap8P( 92, 40, 5, (c_dta.head >= 2 && c_dta.head <= 4) ? bArrowOn : bArrow);
 			ks0108DrawPixmap8P(108, 40, 3, (c_dta.head >= 6 && c_dta.head <= 8) ? lArrowOn : lArrow);
 			ks0108DrawPixmap8P( 99, 49, 5, ((c_dta.head >= 1 && c_dta.head <= 2) || c_dta.head == 1) ? tArrowOn : tArrow);
 			ks0108DrawPixmap8P( 99, 33, 5, (c_dta.head >= 4 && c_dta.head <= 6) ? bArrowOn : bArrow);
