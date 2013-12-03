@@ -58,13 +58,13 @@ main(void)
 
 	static const PROGMEM uint8_t lArrow[3] = {0b00100, 0b01010, 0b10001};
 	static const PROGMEM uint8_t rArrow[3] = {0b10001, 0b01010, 0b00100};
-	static const PROGMEM uint8_t tArrow[5] = {0b001, 0b010, 0b100, 0b010, 0b001};
-	static const PROGMEM uint8_t bArrow[5] = {0b100, 0b010, 0b001, 0b010, 0b100};
+	static const PROGMEM uint8_t tArrow[5] = {0b1000010, 0b1000100, 0b1001000, 0b1000100, 0b1000010};
+	static const PROGMEM uint8_t bArrow[5] = {0b0100, 0b0010, 0b0001, 0b0010, 0b0100};
 
 	static const PROGMEM uint8_t lArrowOn[3] = {0b00100, 0b01110, 0b11111};
 	static const PROGMEM uint8_t rArrowOn[3] = {0b11111, 0b01110, 0b00100};
-	static const PROGMEM uint8_t tArrowOn[5] = {0b001, 0b011, 0b111, 0b011, 0b001};
-	static const PROGMEM uint8_t bArrowOn[5] = {0b100, 0b110, 0b111, 0b110, 0b100};
+	static const PROGMEM uint8_t tArrowOn[5] = {0b1000010, 0b1000110, 0b1001110, 0b1000110, 0b1000010};
+	static const PROGMEM uint8_t bArrowOn[5] = {0b0100, 0b0110, 0b0111, 0b0110, 0b0100};
 
 
 	ks0108DrawRect( 0,  0, 63, 63, BLACK); // xy-area
@@ -88,8 +88,8 @@ main(void)
 	// arrows
 	ks0108DrawPixmap8P( 92, 40, 3, rArrow);
 	ks0108DrawPixmap8P(108, 40, 3, lArrow);
-	ks0108DrawPixmap8P( 99, 49, 5, tArrow);
-	ks0108DrawPixmap8P( 99, 33, 5, bArrow);
+	ks0108DrawPixmap8P( 99, 48, 5, tArrow);
+	ks0108DrawPixmap8P( 99, 32, 5, bArrow);
 
 	// led connected to that indicator as output
 	SETBIT(INDI_DDR, INDI_P);
@@ -169,6 +169,12 @@ main(void)
 			else
 				ks0108FillRect(77+r,  1, 24-r, 3, BLACK);
 
+			// arrows
+			ks0108DrawPixmap8P( 92, 40, 3, (c_dta.head >= 2 && c_dta.head <= 4) ? rArrowOn : rArrow);
+			ks0108DrawPixmap8P(108, 40, 3, (c_dta.head >= 6 && c_dta.head <= 8) ? lArrowOn : lArrow);
+			ks0108DrawPixmap8P( 99, 48, 5, ((c_dta.head >= 1 && c_dta.head <= 2) || c_dta.head == 8) ? tArrowOn : tArrow);
+			ks0108DrawPixmap8P( 99, 32, 5, (c_dta.head >= 4 && c_dta.head <= 6) ? bArrowOn : bArrow);
+
 
 			// fire btn
 			ks0108FillRect( 77, 55, 49,  7, c_dta.btn_fire ? WHITE : BLACK);
@@ -191,12 +197,6 @@ main(void)
 			ks0108FillRect(102, 20,  7,  7, c_dta.btn_b ? WHITE : BLACK);
 			ks0108FillRect(113, 20,  7,  7, c_dta.btn_c ? WHITE : BLACK);
 			ks0108FillRect(119,  9,  7,  7, c_dta.btn_d ? WHITE : BLACK);
-
-			// arrows
-			ks0108DrawPixmap8P( 92, 40, 5, (c_dta.head >= 2 && c_dta.head <= 4) ? bArrowOn : bArrow);
-			ks0108DrawPixmap8P(108, 40, 3, (c_dta.head >= 6 && c_dta.head <= 8) ? lArrowOn : lArrow);
-			ks0108DrawPixmap8P( 99, 49, 5, ((c_dta.head >= 1 && c_dta.head <= 2) || c_dta.head == 1) ? tArrowOn : tArrow);
-			ks0108DrawPixmap8P( 99, 33, 5, (c_dta.head >= 4 && c_dta.head <= 6) ? bArrowOn : bArrow);
 		}
 	}
 	return 0;
