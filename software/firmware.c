@@ -15,6 +15,10 @@
 #define INDI_PORT PORTB
 #define INDI_P PB7
 
+#define LCD_INDI_DDR DDRH
+#define LCD_INDI_PORT PORTH
+#define LCD_INDI_P PH5
+
 volatile uint8_t is_data_valid = 0;
 
 void sw_data_is_now_invalid(void)
@@ -93,9 +97,12 @@ main(void)
 
 	// led connected to that indicator as output
 	SETBIT(INDI_DDR, INDI_P);
+	SETBIT(LCD_INDI_DDR, LCD_INDI_P);
 
 	// enable interrupts
 	sei();
+
+	sw_data_t last_dta = sw_dta;
 
 	while(1)
 	{
@@ -108,95 +115,119 @@ main(void)
 
 			SREG = sreg_tmp;
 
-			// x & y display coords
-			uint8_t
-				x = (((1024 - (uint16_t)c_dta.x) * (62-XY_SZ)) / 1024) + 1,
-				y = (((1024 - (uint16_t)c_dta.y) * (62-XY_SZ)) / 1024) + 1;
+			if(last_dta.x != c_dta.x || last_dta.y != c_dta.y)
+			{
+				// x & y display coords
+				uint8_t
+					x = (((1024 - (uint16_t)c_dta.x) * (62-XY_SZ)) / 1024) + 1,
+					y = (((1024 - (uint16_t)c_dta.y) * (62-XY_SZ)) / 1024) + 1;
 
-			// clear right half of screen
-			if(x > 1)
-				ks0108FillRect(1, 1, x-2, 61, WHITE);
+				// clear right half of screen
+				if(x > 1)
+					ks0108FillRect(1, 1, x-2, 61, WHITE);
 
-			// clear left half of screen
-			if(x < 58)
-				ks0108FillRect(x + XY_SZ, 1, 62 - x - XY_SZ, 61, WHITE);
+				// clear left half of screen
+				if(x < 58)
+					ks0108FillRect(x + XY_SZ, 1, 62 - x - XY_SZ, 61, WHITE);
 
-			// clear part below the dot
-			if(y > 1)
-				ks0108FillRect(x, 1, XY_SZ - 1, y - 2, WHITE);
+				// clear part below the dot
+				if(y > 1)
+					ks0108FillRect(x, 1, XY_SZ - 1, y - 2, WHITE);
 
-			// clear part above the dot
-			if(y < 58)
-				ks0108FillRect(x, y + XY_SZ, XY_SZ - 1, 57 - y, WHITE);
-
-
-			// paint the dot
-			ks0108FillRect(
-				x, y,
-				XY_SZ-1, XY_SZ-1,
-				BLACK
-			);
+				// clear part above the dot
+				if(y < 58)
+					ks0108FillRect(x, y + XY_SZ, XY_SZ - 1, 57 - y, WHITE);
 
 
-
-
-
-			// movable-member
-			uint8_t
-				m = (((128 - (uint16_t)c_dta.m) * 62) / 128);
-
-			// clear movable-member bar
-			if(m < 62)
-				ks0108FillRect(68, m + 1, 3, 61 - m, WHITE);
-
-			// fill movable-member bar
-			if(m > 0)
-				ks0108FillRect(68, 1, 3, m - 1, BLACK);
+				// paint the dot
+				ks0108FillRect(
+					x, y,
+					XY_SZ-1, XY_SZ-1,
+					BLACK
+				);
+			}
 
 
 
 
 
-			// rotation
-			uint8_t
-				r = ((((uint16_t)c_dta.r) * 49) / 64);
+			if(last_dta.m != c_dta.m)
+			{
+				// movable-member
+				uint8_t
+					m = (((128 - (uint16_t)c_dta.m) * 62) / 128);
 
-			// clear rotation bar
-			ks0108FillRect(77, 1, 49, 3, WHITE);
-			// fill movable-member bar
-			if(r > 24)
-				ks0108FillRect(77+25, 1, r-24, 3, BLACK);
-			else
-				ks0108FillRect(77+r,  1, 24-r, 3, BLACK);
+				// clear movable-member bar
+				if(m < 62)
+					ks0108FillRect(68, m + 1, 3, 61 - m, WHITE);
+
+				// fill movable-member bar
+				if(m > 0)
+					ks0108FillRect(68, 1, 3, m - 1, BLACK);
+			}
+
+
+
+
+
+			if(last_dta.r != c_dta.r)
+			{
+				// rotation
+				uint8_t
+					r = ((((uint16_t)c_dta.r) * 49) / 64);
+
+				// clear rotation bar
+				ks0108FillRect(77, 1, 49, 3, WHITE);
+				// fill movable-member bar
+				if(r > 24)
+					ks0108FillRect(77+25, 1, r-24, 3, BLACK);
+				else
+					ks0108FillRect(77+r,  1, 24-r, 3, BLACK);
+			}
 
 			// arrows
-			ks0108DrawPixmap8P( 92, 40, 3, (c_dta.head >= 2 && c_dta.head <= 4) ? rArrowOn : rArrow);
-			ks0108DrawPixmap8P(108, 40, 3, (c_dta.head >= 6 && c_dta.head <= 8) ? lArrowOn : lArrow);
-			ks0108DrawPixmap8P( 99, 48, 5, ((c_dta.head >= 1 && c_dta.head <= 2) || c_dta.head == 8) ? tArrowOn : tArrow);
-			ks0108DrawPixmap8P( 99, 32, 5, (c_dta.head >= 4 && c_dta.head <= 6) ? bArrowOn : bArrow);
+			if(last_dta.head != c_dta.head)
+			{
+				ks0108DrawPixmap8P( 92, 40, 3, (c_dta.head >= 2 && c_dta.head <= 4) ? rArrowOn : rArrow);
+				ks0108DrawPixmap8P(108, 40, 3, (c_dta.head >= 6 && c_dta.head <= 8) ? lArrowOn : lArrow);
+				ks0108DrawPixmap8P( 99, 48, 5, ((c_dta.head >= 1 && c_dta.head <= 2) || c_dta.head == 8) ? tArrowOn : tArrow);
+				ks0108DrawPixmap8P( 99, 32, 5, (c_dta.head >= 4 && c_dta.head <= 6) ? bArrowOn : bArrow);
+			}
 
 
 			// fire btn
-			ks0108FillRect( 77, 55, 49,  7, c_dta.btn_fire ? WHITE : BLACK);
+			if(last_dta.btn_fire != c_dta.btn_fire)
+				ks0108FillRect( 77, 55, 49,  7, c_dta.btn_fire ? WHITE : BLACK);
 
 
 			// head-up-btn
-			ks0108FillRect( 77, 44,  7,  7, c_dta.btn_top_up ? WHITE : BLACK);
+			if(last_dta.btn_top_up != c_dta.btn_top_up)
+				ks0108FillRect( 77, 44,  7,  7, c_dta.btn_top_up ? WHITE : BLACK);
 
 			// head-down-btn
-			ks0108FillRect( 77, 33,  7,  7, c_dta.btn_top_down ? WHITE : BLACK);
+			if(last_dta.btn_top_down != c_dta.btn_top_down)
+				ks0108FillRect( 77, 33,  7,  7, c_dta.btn_top_down ? WHITE : BLACK);
 
 			// head-up-btn
-			ks0108FillRect(119, 33,  7, 18, c_dta.btn_top ? WHITE : BLACK);
+			if(last_dta.btn_top != c_dta.btn_top)
+				ks0108FillRect(119, 33,  7, 18, c_dta.btn_top ? WHITE : BLACK);
 
 			// shift-btn
-			ks0108FillRect( 77,  9,  7, 18, c_dta.btn_shift ? WHITE : BLACK);
+			if(last_dta.btn_shift != c_dta.btn_shift)
+				ks0108FillRect( 77,  9,  7, 18, c_dta.btn_shift ? WHITE : BLACK);
 
 			// [a-d]-btn
-			ks0108FillRect(108,  9,  7,  7, c_dta.btn_a ? WHITE : BLACK);
-			ks0108FillRect(102, 20,  7,  7, c_dta.btn_b ? WHITE : BLACK);
-			ks0108FillRect(113, 20,  7,  7, c_dta.btn_c ? WHITE : BLACK);
-			ks0108FillRect(119,  9,  7,  7, c_dta.btn_d ? WHITE : BLACK);
+			//if(last_dta.btn_a != c_dta.btn_a)
+				ks0108FillRect(108,  9,  7,  7, c_dta.btn_a ? WHITE : BLACK);
+			//if(last_dta.btn_b != c_dta.btn_b)
+				ks0108FillRect(102, 20,  7,  7, c_dta.btn_b ? WHITE : BLACK);
+			//if(last_dta.btn_c != c_dta.btn_c)
+				ks0108FillRect(113, 20,  7,  7, c_dta.btn_c ? WHITE : BLACK);
+			//if(last_dta.btn_d != c_dta.btn_d)
+				ks0108FillRect(119,  9,  7,  7, c_dta.btn_d ? WHITE : BLACK);
+
+			TOGGLEBIT(LCD_INDI_PORT, LCD_INDI_P);
+			last_dta = c_dta;
 		}
 	}
 	return 0;
