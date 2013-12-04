@@ -8,13 +8,13 @@ Reading through Google and Wikipedia I stumbled across [US Patent 5628686](paten
 
 ## Hardware
 Looking at the [Pinout of a Gameport](http://www.dstrom.de/ds/gameport.htm) we directly see the pins used to power the Gameport: 1, 8, 9 for VCC (5V) and 4, 5 for GND. After checking the Pins populated on the specific Device I have here, only the Pins 1 and 4 need to be connected to the respective voltage levels. As can be taken from the Patent, Pin 3 is the trigger used to request a data packet from the Joystick. Pins 2 and 7 are then used to transmit a clock and data back from the Joystick. The required Pins at a glance are:
-
+```
  1 => VCC
  2 => Clock
  3 => Trigger
  4 => GND
  7 => Data
-
+```
 I used an [ArduinoMega](http://arduino.cc/de/Main/ArduinoBoardMega) to do my experiments but you can use all AVR Part with enough GPIO Pins. The Code in this Repo allows configuring the pinput to your needs. It contains everything needed to connect to a [KS0108](https://www.google.de/search?q=KS0108+lcd) comptatible 128x64 Pixel GLCD, visualizing the state of the Gamecontroller, as well as several timing signals used to measure the performance of different parts of the code using a Oscilloscope.
 
 
@@ -53,13 +53,14 @@ This Code uses the external Interrupt INT5 to get into an Interrupt-Hanlder on e
 
 The reason for this is, that the AVRs only have [sinlge-bit shift instructions](http://www.atmel.com/images/doc0856.pdf) implemented in hardware. When performing bit-shifts with constants, the C-Compiler optimizes the shift away and replaces it with an already shifted value (aka `DDRB |= 0b00010000`). But then the shift-value is not constanct (aka `DDRB |= (1<<x)`), the C-Compiler generates a loop, shifting an innocent 1 x times by one bit, until it has generated a adequate bit mask to OR with the register. This may be optimal from a code-size point of view, but it obviously comes with a tradeof in runtime. You can see the results in the graph showing the bad timing above:
 
-`
+```
 if(BITSET(SW_DTA_PIN, SW_DTA_P))
 	SETBIT(sw_dta.bits, sw_bitcnt); // this generates a loop, shifting a zero sw_bitcount-times to the left
-`
+```
 
 Instead of letting the compiler generate a bulk-standard-solution which does not fit our use-case here, it's better to implement something more efficient ourselfs:
-`
+
+```
 volatile uint8_t *byte = &sw_dta.bytes[sw_bitcnt / 8];
 
 switch(sw_bitcnt % 8)
@@ -73,7 +74,8 @@ switch(sw_bitcnt % 8)
 	case 6: SETBIT(*byte, 6); break;
 	case 7: SETBIT(*byte, 7); break;
 }
-`
+```
+
 First we generate a pointer to one of our 6 data-bytes. Then we set the respective bit in that byte. The case generates a set of compares and conditional jump instructions, but for each cycle the number of actually executed instructions is relatively small compared to the massive shift-me-by-one-48-times loop we had before.
 
 Both, the modulus of 8 and the division by 8 are relatively cheap instructions but they could be further optimized by using separate counters.
@@ -85,7 +87,7 @@ sw_dta.bytes is an array of 6x uint8_t types which exists in union with a struct
 ## Graphical Output
 The ks0108-Routines are borrowd from [mikrocontroller.net](http://www.mikrocontroller.net/articles/KS0108_Library) and used to draw an image like the following onto the screen:
 
-<img src="doc/screen.png">
+<img src="doc/screen.png" width="400">
 
 To optimize the refresh rate, only the parts that actually changed are redrawn. The Redraw-Rate varies between 160 Hz and 40 Hz, depending on the action you perform to the Joystick. The Painting-Routines are written in a way that should result in a mostly flicker-free display (The code tries not to erase everything and then repaint it, but instead only erase the parts that will actually be empty afterwards).
 
