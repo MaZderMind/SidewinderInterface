@@ -94,4 +94,4 @@ To optimize the refresh rate, only the parts that actually changed are redrawn. 
 
 
 ## Contact
-If you have any questions just ask at peter@mazdermind.de or drop me a short line [https://alpha.app.net/MaZderMind](on ADN).
+If you have any questions just ask at peter@mazdermind.de or drop me a short line [on ADN](https://alpha.app.net/MaZderMind).
