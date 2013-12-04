@@ -443,10 +443,14 @@ void ks0108Init(uint8_t invert) {
 	
 	LCD_CMD_DIR = 0xFF;								// command port is output
 	ks0108WriteCommand(LCD_ON, CHIP1);				// power on
+	_delay_us(50);
 	ks0108WriteCommand(LCD_ON, CHIP2);
+	_delay_us(50);
 	
 	ks0108WriteCommand(LCD_DISP_START, CHIP1);		// display start line = 0
+	_delay_us(50);
 	ks0108WriteCommand(LCD_DISP_START, CHIP2);
+	_delay_us(50);
 	ks0108ClearScreen();							// display clear
 	ks0108GotoXY(0,0);
 }
@@ -456,9 +460,12 @@ inline void ks0108Enable(void) {
 	asm volatile("nop\n\t"
 				 "nop\n\t"
 				 "nop\n\t"
+				 "nop\n\t"
+				 "nop\n\t"
+				 "nop\n\t"
 				 ::);
 	LCD_CMD_PORT &= ~(0x01 << EN);
-	for(volatile uint8_t i=0; i<8; i++);			// a little delay loop (faster than reading the busy flag)
+	for(volatile uint8_t i=0; i<16; i++);			// a little delay loop (faster than reading the busy flag)
 }
 
 uint8_t ks0108DoReadData(uint8_t first) {
