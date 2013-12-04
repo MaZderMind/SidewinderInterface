@@ -3,58 +3,78 @@
 #define SW_TIMING_READING 1
 #define SW_TIMING_READING_CT 2000
 
+// the RCVINDI-Pin goes low when the MCU starts capturing a new Packet.
+// It goes high when a complete Packet has been received
+// it can be used to connect a LED which glows when a successfull data
+// connection has been established. Probe it with a scope or a Frequency
+// Counter to get an indication of the data update rate
 #define SW_RCVINDI_DDR DDRB
 #define SW_RCVINDI_PORT PORTB
 #define SW_RCVINDI_P PB4
 
+// the CLKINDI-Pin pulses whenever the MCU perceives a clock pulse from
+// the Joystick. Probe it with an oscilloscope together with the Clock-Signal
+// coming from the gameport to see, if your Interrupt-Code is fast enough to
+// cope with the Clock rate
 #define SW_CLKINDI_DDR DDRH
 #define SW_CLKINDI_PORT PORTH
 #define SW_CLKINDI_P PH6
 
+// The Pin to which the Clock-Line (SUBD-Pin 2) from the Joystick is connected to
+// Attention: The Code blow assumes this to be the INT5-Line. You need to
+//   connect this Signal to one of the Pins capable of triggering external
+//   interrupts and change all Lines denoted with INT5 to whichever INTn-Pin
+//   you used
 #define SW_CLK_DDR DDRE
 #define SW_CLK_PIN PINE
 #define SW_CLK_P PE5
 
+// The Pin to which the Data-Line (SUBD-Pin 7) from the Joystick is connected to
+// Can be any GPIO-Pin
 #define SW_DTA_DDR DDRB
 #define SW_DTA_PIN PINB
 #define SW_DTA_P PB6
 
+// The Pin on which the MCU sends its Trigger-Signal (SUBD-Pin 3)
+// Can also be any GPIO-Pin
 #define SW_TIMING_DDR DDRB
 #define SW_TIMING_PORT PORTB
 #define SW_TIMING_P PB5
 
 // data structure as sent from my sidewinder device, 48 bits total
-// this datatype is accessable via two ways: an long integer with bits in it and a struc
+// this datatype is accessable via two ways: an integer-array and a struct
+// the former is used to used to manipulate the data at a bit-level
+// while the latter is used to access individual pieces of data
 typedef union
 {
 	// the struct consisting of the various data-fields sent by the sidewinder device
 	struct
 	{
-		unsigned int btn_fire:1;      // edge  1
+		unsigned int btn_fire:1;      // bit  1
 
-		unsigned int btn_top:1; // edge  2
-		unsigned int btn_top_up:1;    // edge  3
-		unsigned int btn_top_down:1;  // edge  4
+		unsigned int btn_top:1;       // bit  2
+		unsigned int btn_top_up:1;    // bit  3
+		unsigned int btn_top_down:1;  // bit  4
 
-		unsigned int btn_a:1;         // edge  5
-		unsigned int btn_b:1;         // edge  6
-		unsigned int btn_c:1;         // edge  7
-		unsigned int btn_d:1;         // edge  8
+		unsigned int btn_a:1;         // bit  5
+		unsigned int btn_b:1;         // bit  6
+		unsigned int btn_c:1;         // bit  7
+		unsigned int btn_d:1;         // bit  8
 		
-		unsigned int btn_shift:1;     // edge  9
+		unsigned int btn_shift:1;     // bit  9
 
-		unsigned int x:10;           // edge 10-19
-		unsigned int y:10;           // edge 20-29
-		unsigned int m:7;             // edge 30-36
-		unsigned int r:6;             // edge 37-42
+		unsigned int x:10;            // bits 10-19
+		unsigned int y:10;            // bits 20-29
+		unsigned int m:7;             // bits 30-36
+		unsigned int r:6;             // bits 37-42
 
-		unsigned int head:4;          // edge 43-46
+		unsigned int head:4;          // bits 43-46
 
-		unsigned int reserved:1;      // edge 47
-		unsigned int parity:1;        // edge 48
+		unsigned int reserved:1;      // bit 47
+		unsigned int parity:1;        // bit 48
 	};
 
-	// the int used to access the data at bitlevel
+	// the ints are used to access the struct-data at bit-level
 	uint8_t bytes[6];
 } sw_data_t;
 
@@ -140,8 +160,6 @@ ISR(TIMER1_COMPA_vect)
 		// switch modes
 		sw_timer_state = SW_TIMING_READING;
 
-		// rewind to bit 0
-
 		// disable external interrupt 5
 		CLEARBIT(EIMSK, INT5);
 
@@ -169,10 +187,10 @@ ISR(TIMER1_COMPA_vect)
 		sw_dta = sw_data_empty;
 		sw_bitcnt = 0;
 
-		// clear interrupt flag
+		// clear INT5 interrupt flag
 		SETBIT(EIFR, INTF5);
 
-		// enable external interrupt 5
+		// enable external interrupt INT5
 		SETBIT(EIMSK, INT5);
 
 		// release timing line high again
@@ -187,6 +205,7 @@ ISR(TIMER1_COMPA_vect)
 
 
 
+// Interrupt-Handler for external Interrupt INT5
 ISR(INT5_vect)
 {
 
